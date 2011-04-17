@@ -1,0 +1,27 @@
+LIBRARY   qrcodelib
+DESCRIPTION "QR Code Library"
+EXPORTS
+	QRinput_new @1
+	QRinput_new2 @2
+	QRinput_append @3
+	QRinput_getVersion @4
+	QRinput_setVersion @5
+	QRinput_getErrorCorrectionLevel @6
+	QRinput_setErrorCorrectionLevel @7
+	QRinput_free @8
+	QRinput_check @9
+	QRinput_Struct_new @10
+	QRinput_Struct_setParity @11
+	QRinput_Struct_appendInput @12
+	QRinput_Struct_free @13
+	QRinput_splitQRinputToStruct @14
+	QRinput_Struct_insertStructuredAppendHeaders @15
+	QRcode_encodeInput @16
+	QRcode_encodeString @17
+	QRcode_encodeString8bit @18
+	QRcode_free @19
+	QRcode_encodeInputStructured @20
+	QRcode_encodeStringStructured @21
+	QRcode_encodeString8bitStructured @22
+	QRcode_List_size @23
+	QRcode_List_free @24

@@ -1,0 +1,4 @@
+
+
+#define __STATIC static
+
