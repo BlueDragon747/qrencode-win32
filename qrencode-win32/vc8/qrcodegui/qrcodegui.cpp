@@ -56,6 +56,13 @@ INT_PTR CALLBACK MainWnd(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	UNREFERENCED_PARAMETER(lParam);
 	switch (message)
 	{
+	case WM_GETMINMAXINFO:
+		MINMAXINFO mmi;
+		memcpy(&mmi, (void*)lParam, sizeof(mmi));
+		mmi.ptMinTrackSize.x = 250;
+		mmi.ptMinTrackSize.y = 200;
+		memcpy((void*)lParam, &mmi, sizeof(mmi));
+		return 0;
 	case WM_SIZE:
 		{
 			if(wParam != SIZE_RESTORED)
@@ -88,6 +95,7 @@ INT_PTR CALLBACK MainWnd(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 		    HICON hIcon = LoadIcon (hInst, MAKEINTRESOURCE (IDI_QRCODEGUI));
 			SendMessage (hDlg, WM_SETICON, WPARAM (ICON_SMALL), LPARAM (hIcon));
+			EnableWindow(GetDlgItem(hDlg, IDOK), FALSE);
 		}
 		return (INT_PTR)TRUE;
 
@@ -137,6 +145,11 @@ INT_PTR CALLBACK MainWnd(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			fu.SetIniValue(L"level", szLevel);
 
 			return (INT_PTR)TRUE;
+		}
+		if ((HIWORD(wParam) == EN_UPDATE) && (LOWORD(wParam) == IDC_EDIT_TEXT))
+		{
+			BOOL bEnable = !!GetWindowTextLength(GetDlgItem(hDlg, IDC_EDIT_TEXT));
+			EnableWindow(GetDlgItem(hDlg, IDOK), bEnable);
 		}
 		break;
 	}
@@ -233,3 +246,4 @@ INT_PTR CALLBACK ImageWnd(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	return (INT_PTR)FALSE;
 }
+

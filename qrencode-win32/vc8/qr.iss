@@ -16,5 +16,8 @@ Source: "settings.ini"; DestDir: "{userappdata}\QRCodeGui"
 Source: "release lib\qrcodegui.exe"; DestDir: "{app}"
 Source: "release lib\qrcode.exe"; DestDir: "{app}"
 
+[Run]
+Filename: "{app}\qrcodegui.exe"; Description: "Open QRCodeGui after finish"; Flags: postinstall
+
 [Icons]
 Name: "{group}\QRCodeGui"; Filename: "{app}\qrcodegui.exe"
