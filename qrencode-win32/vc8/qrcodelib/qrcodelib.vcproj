@@ -16,9 +16,9 @@
 	</ToolFiles>
 	<Configurations>
 		<Configuration
-			Name="Debug Dll|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			Name="Debug-Dll|Win32"
+			OutputDirectory="../.build/$(ConfigurationName)"
+			IntermediateDirectory="../.build/$(ProjectName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
 			>
@@ -93,9 +93,9 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release Dll|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			Name="Release-Dll|Win32"
+			OutputDirectory="../.build/$(ConfigurationName)"
+			IntermediateDirectory="../.build/$(ProjectName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -170,9 +170,9 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Debug Lib|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			Name="Debug-Lib|Win32"
+			OutputDirectory="../.build/$(ConfigurationName)"
+			IntermediateDirectory="../.build/$(ProjectName)/$(ConfigurationName)"
 			ConfigurationType="4"
 			CharacterSet="2"
 			>
@@ -233,9 +233,9 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release Lib|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			Name="Release-Lib|Win32"
+			OutputDirectory="../.build/$(ConfigurationName)"
+			IntermediateDirectory="../.build/$(ProjectName)/$(ConfigurationName)"
 			ConfigurationType="4"
 			CharacterSet="2"
 			WholeProgramOptimization="1"

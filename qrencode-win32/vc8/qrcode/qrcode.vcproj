@@ -16,9 +16,9 @@
 	</ToolFiles>
 	<Configurations>
 		<Configuration
-			Name="Debug Dll|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			Name="Debug-Dll|Win32"
+			OutputDirectory="../.build/$(ConfigurationName)"
+			IntermediateDirectory="../.build/$(ProjectName)/$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="2"
 			>
@@ -63,7 +63,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="qrcodelib.lib libpng15d.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\debug dll;.\png"
+				AdditionalLibraryDirectories="..\.build\debug-dll;.\png"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -94,9 +94,9 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release Dll|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			Name="Release-Dll|Win32"
+			OutputDirectory="../.build/$(ConfigurationName)"
+			IntermediateDirectory="../.build/$(ProjectName)/$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -139,7 +139,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="qrcodelib.lib libpng15.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\release dll;.\png"
+				AdditionalLibraryDirectories="..\.build\release-dll;.\png"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -172,9 +172,9 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Debug Lib|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			Name="Debug-Lib|Win32"
+			OutputDirectory="../.build/$(ConfigurationName)"
+			IntermediateDirectory="../.build/$(ProjectName)/$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="2"
 			>
@@ -219,7 +219,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="qrcodelib.lib libpngd.lib zlibd.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\debug lib;.\png"
+				AdditionalLibraryDirectories="..\.build\debug-lib;.\png"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -250,9 +250,9 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release Lib|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			Name="Release-Lib|Win32"
+			OutputDirectory="../.build/$(ConfigurationName)"
+			IntermediateDirectory="../.build/$(ProjectName)/$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			CharacterSet="2"
@@ -296,7 +296,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="qrcodelib.lib libpng.lib zlib.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\release lib;.\png"
+				AdditionalLibraryDirectories="..\.build\release-lib;.\png"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -341,7 +341,7 @@
 				RelativePath=".\getopt.c"
 				>
 				<FileConfiguration
-					Name="Debug Dll|Win32"
+					Name="Debug-Dll|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -349,7 +349,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release Dll|Win32"
+					Name="Release-Dll|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -357,7 +357,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug Lib|Win32"
+					Name="Debug-Lib|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -365,7 +365,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release Lib|Win32"
+					Name="Release-Lib|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -381,7 +381,7 @@
 				RelativePath="..\..\qrenc.c"
 				>
 				<FileConfiguration
-					Name="Debug Dll|Win32"
+					Name="Debug-Dll|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -389,7 +389,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release Dll|Win32"
+					Name="Release-Dll|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -397,7 +397,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug Lib|Win32"
+					Name="Debug-Lib|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -405,7 +405,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release Lib|Win32"
+					Name="Release-Lib|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool

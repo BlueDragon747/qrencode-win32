@@ -16,9 +16,9 @@
 	</ToolFiles>
 	<Configurations>
 		<Configuration
-			Name="Debug Lib|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			Name="Debug-Lib|Win32"
+			OutputDirectory="../.build/$(ConfigurationName)"
+			IntermediateDirectory="../.build/$(ProjectName)/$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfATL="1"
 			CharacterSet="1"
@@ -93,9 +93,9 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release Lib|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			Name="Release-Lib|Win32"
+			OutputDirectory="../.build/$(ConfigurationName)"
+			IntermediateDirectory="../.build/$(ProjectName)/$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfATL="1"
 			CharacterSet="1"
@@ -170,9 +170,9 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Debug Dll|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			Name="Debug-Dll|Win32"
+			OutputDirectory="../.build/$(ConfigurationName)"
+			IntermediateDirectory="../.build/$(ProjectName)/$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfATL="1"
 			CharacterSet="1"
@@ -247,9 +247,9 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release Dll|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			Name="Release-Dll|Win32"
+			OutputDirectory="../.build/$(ConfigurationName)"
+			IntermediateDirectory="../.build/$(ProjectName)/$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfATL="1"
 			CharacterSet="1"
@@ -344,7 +344,7 @@
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
-					Name="Debug Lib|Win32"
+					Name="Debug-Lib|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -352,7 +352,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release Lib|Win32"
+					Name="Release-Lib|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -360,7 +360,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug Dll|Win32"
+					Name="Debug-Dll|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -368,7 +368,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release Dll|Win32"
+					Name="Release-Dll|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
