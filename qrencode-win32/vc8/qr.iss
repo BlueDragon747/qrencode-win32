@@ -8,13 +8,14 @@ UninstallDisplayIcon={app}\qrcodegui.exe
 Compression=lzma2
 SolidCompression=yes
 LicenseFile=..\COPYING
-OutputDir=release lib
+OutputDir=.\.build\setup
 OutputBaseFilename=qrcodegui_setup-1.0
 
 [Files]
 Source: "settings.ini"; DestDir: "{userappdata}\QRCodeGui"
-Source: "release lib\qrcodegui.exe"; DestDir: "{app}"
-Source: "release lib\qrcode.exe"; DestDir: "{app}"
+Source: ".\.build\release-lib\qrcodegui.exe"; DestDir: "{app}"
+Source: ".\.build\release-lib\qrcode.exe"; DestDir: "{app}"
+Source: ".\test.bat"; DestDir: "{app}"
 
 [Run]
 Filename: "{app}\qrcodegui.exe"; Description: "Open QRCodeGui after finish"; Flags: postinstall
