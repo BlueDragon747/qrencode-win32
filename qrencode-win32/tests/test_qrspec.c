@@ -2,6 +2,8 @@
 #include <string.h>
 #include "common.h"
 #include "../qrspec.h"
+#include "../qrencode_inner.h"
+#include "decoder.h"
 
 void print_eccTable(void)
 {
@@ -122,6 +124,8 @@ void test_newframe(void)
 	size_t len;
 	FILE *fp;
 	unsigned char *frame;
+	QRcode *qrcode;
+	unsigned int version;
 
 	testStart("Checking newly created frame.");
 	fp = fopen("frame", "rb");
@@ -138,11 +142,26 @@ void test_newframe(void)
 			abort();
 		}
 		assert_zero(memcmp(frame, buf, len), "frame pattern mismatch (version %d)\n", i);
-		free(frame);
+		qrcode = QRcode_new(i, width, frame);
+		version = QRcode_decodeVersion(qrcode);
+		assert_equal(version, i, "Decoded version number is wrong: %d, expected %d.\n", version, i);
+		QRcode_free(qrcode);
 	}
 
 	testFinish();
 	fclose(fp);
+}
+
+void test_newframe_invalid(void)
+{
+	unsigned char *frame;
+
+	testStart("Checking QRspec_newFrame with invalid version.");
+	frame = QRspec_newFrame(0);
+	assert_null(frame, "QRspec_newFrame(0) returns non-NULL.");
+	frame = QRspec_newFrame(QRSPEC_VERSION_MAX+1);
+	assert_null(frame, "QRspec_newFrame(0) returns non-NULL.");
+	testFinish();
 }
 
 #if 0
@@ -288,12 +307,13 @@ void test_format(void)
 	testEnd(err);
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
 	test_eccTable();
 	test_eccTable2();
 	//print_eccTable();
 	test_newframe();
+	test_newframe_invalid();
 	//test_alignment();
 	test_verpat();
 	//print_newFrame();

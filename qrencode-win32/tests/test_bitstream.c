@@ -9,9 +9,9 @@ void test_null(void)
 
 	testStart("Empty stream");
 	bstream = BitStream_new();
-	assert_zero(BitStream_size(bstream), "Size of empty BitStream is not 0.");
-	assert_null(BitStream_toByte(bstream), "BitStream_toByte returned non-NULL.");
-	assert_nothing(BitStream_free(NULL), "Check BitStream_free(NULL).\n");
+	assert_zero(BitStream_size(bstream), "Size of empty BitStream is not 0.\n");
+	assert_null(BitStream_toByte(bstream), "BitStream_toByte returned non-NULL.\n");
+	assert_nothing(BitStream_free(NULL), "Checking BitStream_free(NULL).\n");
 	testFinish();
 
 	BitStream_free(bstream);
@@ -47,20 +47,20 @@ void test_bytes(void)
 void test_appendNum(void)
 {
 	BitStream *bstream;
-	char correct[] = "10001010111111111111111100010010001101000101011001111000";
+	char correct[] = "10001010 11111111 11111111 00010010001101000101011001111000";
 
 	testStart("Append Num");
 	bstream = BitStream_new();
 
 	BitStream_appendNum(bstream,  8, 0x0000008a);
-	assert_zero(ncmpBin(correct, bstream, 8), "Internal data is incorrect.");
+	assert_zero(ncmpBin(correct, bstream, 8), "Internal data is incorrect.\n");
 
 	BitStream_appendNum(bstream, 16, 0x0000ffff);
-	assert_zero(ncmpBin(correct, bstream, 24), "Internal data is incorrect.");
+	assert_zero(ncmpBin(correct, bstream, 24), "Internal data is incorrect.\n");
 
 	BitStream_appendNum(bstream, 32, 0x12345678);
 
-	assert_zero(cmpBin(correct, bstream), "Internal data is incorrect.");
+	assert_zero(cmpBin(correct, bstream), "Internal data is incorrect.\n");
 	testFinish();
 
 	BitStream_free(bstream);
@@ -82,7 +82,7 @@ void test_appendBytes(void)
 	data[0] = 0xff;
 	data[1] = 0xff;
 	BitStream_appendBytes(bstream, 2, data);
-	assert_zero(ncmpBin(correct, bstream, 24), "Internal data is incorrect.");
+	assert_zero(ncmpBin(correct, bstream, 24), "Internal data is incorrect.\n");
 
 	data[0] = 0x12;
 	data[1] = 0x34;
@@ -90,7 +90,7 @@ void test_appendBytes(void)
 	data[3] = 0x78;
 	BitStream_appendBytes(bstream, 4, data);
 
-	assert_zero(cmpBin(correct, bstream), "Internal data is incorrect.");
+	assert_zero(cmpBin(correct, bstream), "Internal data is incorrect.\n");
 	testFinish();
 
 	BitStream_free(bstream);
@@ -118,6 +118,32 @@ void test_toByte(void)
 	free(result);
 }
 
+void test_toByte_4bitpadding(void)
+{
+	BitStream *bstream;
+	unsigned char *result;
+
+	testStart("Convert to a byte array");
+
+	bstream = BitStream_new();
+	BitStream_appendNum(bstream, 4, 0xb);
+	result = BitStream_toByte(bstream);
+	assert_equal(result[0], 0xb, "incorrect paddings\n");
+	BitStream_free(bstream);
+	free(result);
+
+	bstream = BitStream_new();
+	BitStream_appendNum(bstream, 12, 0x335);
+	result = BitStream_toByte(bstream);
+	assert_equal(result[0], 0x33, "incorrect paddings\n");
+	assert_equal(result[1], 0x05, "incorrect paddings\n");
+	BitStream_free(bstream);
+	free(result);
+
+	testFinish();
+
+}
+
 void test_size(void)
 {
 	BitStream *bstream;
@@ -134,7 +160,7 @@ void test_size(void)
 	BitStream_free(bstream);
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
 	test_null();
 	test_num();
@@ -142,6 +168,7 @@ int main(int argc, char **argv)
 	test_appendNum();
 	test_appendBytes();
 	test_toByte();
+	test_toByte_4bitpadding();
 	test_size();
 
 	report();

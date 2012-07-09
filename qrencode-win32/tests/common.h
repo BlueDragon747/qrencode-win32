@@ -6,6 +6,7 @@
 #define __COMMON_H__
 
 #include <stdlib.h>
+#include "../config.h"
 #include "../qrencode.h"
 #include "../qrinput.h"
 #include "../bitstream.h"
@@ -26,12 +27,10 @@ const char *modeStr[5] = {"nm", "an", "8", "kj", "st"};
 void printQRinput(QRinput *input)
 {
 	QRinput_List *list;
-	unsigned char *p;
 	int i;
 
 	list = input->head;
 	while(list != NULL) {
-		p = list->data;
 		for(i=0; i<list->size; i++) {
 			printf("0x%02x,", list->data[i]);
 		}
@@ -69,6 +68,23 @@ void printQRinputInfo(QRinput *input)
 		i++;
 		list = list->next;
 	}
+}
+
+void printFrame(int width, unsigned char *frame)
+{
+	int x, y;
+
+	for(y=0; y<width; y++) {
+		for(x=0; x<width; x++) {
+			printf("%02x ", *frame++);
+		}
+		printf("\n");
+	}
+}
+
+void printQRcode(QRcode *code)
+{
+	printFrame(code->width, code->data);
 }
 
 void testStartReal(const char *func, const char *name)
@@ -123,15 +139,24 @@ void report()
 int ncmpBin(char *correct, BitStream *bstream, int len)
 {
 	int i, bit;
+	char *p;
 
 	if(len != BitStream_size(bstream)) {
 		printf("Length is not match: %d, %d expected.\n", BitStream_size(bstream), len);
 		return -1;
 	}
 
-	for(i=0; i<len; i++) {
-		bit = (correct[i] == '1')?1:0;
+	p = correct;
+	i = 0;
+	while(*p != '\0') {
+		while(*p == ' ') {
+			p++;
+		}
+		bit = (*p == '1')?1:0;
 		if(bstream->data[i] != bit) return -1;
+		i++;
+		p++;
+		if(i == len) break;
 	}
 
 	return 0;
@@ -139,61 +164,24 @@ int ncmpBin(char *correct, BitStream *bstream, int len)
 
 int cmpBin(char *correct, BitStream *bstream)
 {
-	int len;
+	int len = 0;
+	char *p;
 
-	len = strlen(correct);
+
+	for(p = correct; *p != '\0'; p++) {
+		if(*p != ' ') len++;
+	}
 	return ncmpBin(correct, bstream, len);
 }
 
-char *sprintfBin(int size, unsigned char *data)
+void printBstream(BitStream *bstream)
 {
-	int i, j;
-	unsigned char mask;
-	int b, r;
-	char *str, *p;
+	int i, size;
 
-	str = (char *)malloc(size + 1);
-	p = str;
-	b = size / 8;
-	for(i=0; i<b; i++) {
-		mask = 0x80;
-		for(j=0; j<8; j++) {
-			if(data[i] & mask) {
-				*p = '1';
-			} else {
-				*p = '0';
-			}
-			p++;
-			mask = mask >> 1;
-		}
+	size = BitStream_size(bstream);
+	for(i=0; i<size; i++) {
+		printf(bstream->data[i]?"1":"0");
 	}
-	r = size - b * 8;
-	if(r) {
-		mask = 1 << (r - 1);
-		for(i=0; i<r; i++) {
-			if(data[b] & mask) {
-				*p = '1';
-			} else {
-				*p = '0';
-			}
-			p++;
-			mask = mask >> 1;
-		}
-	}
-	*p = '\0';
-
-	return str;
-}
-
-static char qrModeChar[4] = {'n', 'a', '8', 'k'};
-void printQrinput(QRinput *input)
-{
-	QRinput_List *list;
-
-	list = input->head;
-	while(list != NULL) {
-		printf("%c(%d)\n", qrModeChar[list->mode], list->size);
-		list = list->next;
-	}
+	printf("\n");
 }
 #endif /* __COMMON_H__ */

@@ -1,11 +1,25 @@
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include "common.h"
 #include "../qrencode_inner.h"
 #include "../qrspec.h"
+#include "../mqrspec.h"
 #include "../qrinput.h"
 #include "../mask.h"
 #include "../rscode.h"
+#include "../split.h"
+#include "decoder.h"
+
+static const char decodeAnTable[45] = {
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+	'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+	'U', 'V', 'W', 'X', 'Y', 'Z', ' ', '$', '%', '*',
+	'+', '-', '.', '/', ':'
+};
+
+#define drand(__scale__) ((__scale__) * (double)rand() / ((double)RAND_MAX + 1.0))
 
 int inputSize(QRinput *input)
 {
@@ -17,6 +31,43 @@ int inputSize(QRinput *input)
 	BitStream_free(bstream);
 
 	return size;
+}
+
+void test_qrraw_new(void)
+{
+	int i;
+	QRinput *stream;
+	char num[9] = "01234567";
+	QRRawCode *raw;
+
+	testStart("Test QRRaw_new()");
+	stream = QRinput_new();
+	QRinput_setVersion(stream, 10);
+	QRinput_setErrorCorrectionLevel(stream, QR_ECLEVEL_Q);
+	QRinput_append(stream, QR_MODE_NUM, 8, (unsigned char *)num);
+
+	raw = QRraw_new(stream);
+	assert_nonnull(raw, "Failed QRraw_new().\n");
+	assert_zero(raw->count, "QRraw.count = %d != 0\n", raw->count);
+	assert_equal(raw->version, 10, "QRraw.version was not as expected. (%d)\n", raw->version);
+	assert_equal(raw->dataLength, 19 * 6 + 20 * 2, "QRraw.dataLength was not as expected.\n");
+	assert_equal(raw->eccLength, 24 * 8, "QRraw.eccLength was not as expected.\n");
+	assert_equal(raw->b1, 6, "QRraw.b1 was not as expected.\n");
+	assert_equal(raw->blocks, 8, "QRraw.blocks was not as expected.\n");
+
+	for(i=0; i<raw->b1; i++) {
+		assert_equal(raw->rsblock[i].dataLength, 19, "QRraw.rsblock[].dataLength was not as expected.\n");
+	}
+	for(i=raw->b1; i<raw->blocks; i++) {
+		assert_equal(raw->rsblock[i].dataLength, 20, "QRraw.rsblock[].dataLength was not as expected.\n");
+	}
+	for(i=0; i<raw->blocks; i++) {
+		assert_equal(raw->rsblock[i].eccLength, 24, "QRraw.rsblock[].eccLength was not as expected.\n");
+	}
+
+	QRinput_free(stream);
+	QRraw_free(raw);
+	testFinish();
 }
 
 void test_iterate()
@@ -92,86 +143,94 @@ void test_iterate2()
 	testEnd(err);
 }
 
-#if 0
 void print_filler(void)
 {
 	int width;
-	int x, y;
-	int version = 5;
+	int version = 7;
 	unsigned char *frame;
 
 	width = QRspec_getWidth(version);
-	frame = FrameFiller_fillerTest(version);
+	frame = FrameFiller_test(version);
+	if(frame == NULL) abort();
 
-	for(y=0; y<width; y++) {
-		for(x=0; x<width; x++) {
-			printf("%02x ", *frame++);
-		}
-		printf("\n");
-	}
+	printFrame(width, frame);
+	free(frame);
 }
 
 void test_filler(void)
 {
-	int i;
 	unsigned char *frame;
-	int err = 0;
-	int j, w, e;
+	int i, j, w, e, length;
 
-	testStart("Frame fillter test");
+	testStart("Frame filler test");
 	for(i=1; i<=QRSPEC_VERSION_MAX; i++) {
-		frame = FrameFiller_fillerTest(i);
+		length = QRspec_getDataLength(i, QR_ECLEVEL_L) * 8
+		       + QRspec_getECCLength(i, QR_ECLEVEL_L) * 8
+			   + QRspec_getRemainder(i);
+		frame = FrameFiller_test(i);
 		if(frame == NULL) {
-			printf("Something wrong in version %d\n", i);
-			err++;
+			assert_nonnull(frame, "Something wrong in version %d\n", i);
 		} else {
 			w = QRspec_getWidth(i);
 			e = 0;
 			for(j=0; j<w*w; j++) {
 				if(frame[j] == 0) e++;
 			}
+			assert_zero(e, "Not filled bit is found. (%d,%d)\n", j%w,j/w);
+			e = w * (w - 9 - ((i > 6)?3:0));
+			assert_equal(frame[e], (unsigned char)((length - 1) & 127) | 0x80,
+			"Number of cell does not match.\n");
 			free(frame);
-			if(e) {
-				printf("Non-filled bit was found in version %d\n", i);
-				err++;
-			}
 		}
-
 	}
-	testEnd(err);
+	testFinish();
 }
-#endif
 
-void print_mask(void)
+void print_fillerMQR(void)
 {
-	int mask;
-	int x, y;
-	int version = 4;
 	int width;
-	unsigned char *frame, *masked, *p;
+	int version = 3;
+	unsigned char *frame;
 
-	width = QRspec_getWidth(version);
-	frame = (unsigned char *)malloc(width * width);
-	memset(frame, 0x20, width * width);
-	for(mask=0; mask<8; mask++) {
-		masked = Mask_makeMask(width, frame, mask, QR_ECLEVEL_L);
-		p = masked;
-		printf("mask %d:\n", mask);
-		for(y=0; y<width; y++) {
-			for(x=0; x<width; x++) {
-				if(*p & 1) {
-					printf("#");
-				} else {
-					printf(" ");
-				}
-				p++;
-			}
-			printf("\n");
-		}
-		printf("\n");
-		free(masked);
+	for(version = 1; version <= MQRSPEC_VERSION_MAX; version++) {
+		width = MQRspec_getWidth(version);
+		frame = FrameFiller_testMQR(version);
+		if(frame == NULL) abort();
+
+		printFrame(width, frame);
 	}
-	free(frame);
+}
+
+void test_fillerMQR(void)
+{
+	unsigned char *frame;
+	int i, j, w, e, length;
+
+	testStart("Micro QR Code Frame filler test");
+	for(i=1; i<=MQRSPEC_VERSION_MAX; i++) {
+		length = MQRspec_getDataLengthBit(i, QR_ECLEVEL_L)
+		       + MQRspec_getECCLength(i, QR_ECLEVEL_L) * 8;
+		frame = FrameFiller_testMQR(i);
+		if(frame == NULL) {
+			assert_nonnull(frame, "Something wrong in version %d\n", i);
+		} else {
+			w = MQRspec_getWidth(i);
+			e = 0;
+			for(j=0; j<w*w; j++) {
+				if(frame[j] == 0) e++;
+			}
+			assert_zero(e, "Not filled bit is found. (%d,%d)\n", j%w,j/w);
+			if(i & 1) {
+				e = w * 9 + 1;
+			} else {
+				e = w * (w - 1) + 1;
+			}
+			assert_equal(frame[e], (unsigned char)((length - 1) & 127) | 0x80,
+			"Number of cell does not match in version %d.\n", i);
+			free(frame);
+		}
+	}
+	testFinish();
 }
 
 void test_format(void)
@@ -236,111 +295,6 @@ void test_format(void)
 	free(frame);
 
 	testEnd(0);
-}
-
-#define N1 (3)
-#define N2 (3)
-#define N3 (40)
-#define N4 (10)
-
-void test_eval(void)
-{
-	unsigned char *frame;
-	int w = 6;
-	int demerit;
-
-	frame = (unsigned char *)malloc(w * w);
-
-	testStart("Test mask evaluation (all white)");
-	memset(frame, 0, w * w);
-	demerit = Mask_evaluateSymbol(w, frame);
-	testEndExp(demerit == ((N1 + 1)*w*2 + N2 * (w - 1) * (w - 1)));
-
-	testStart("Test mask evaluation (all black)");
-	memset(frame, 1, w * w);
-	demerit = Mask_evaluateSymbol(w, frame);
-	testEndExp(demerit == ((N1 + 1)*w*2 + N2 * (w - 1) * (w - 1)));
-
-	free(frame);
-}
-
-/* .#.#.#.#.#
- * #.#.#.#.#.
- * ..##..##..
- * ##..##..##
- * ...###...#
- * ###...###.
- * ....####..
- * ####....##
- * .....#####
- * #####.....
- */
-void test_eval2(void)
-{
-	unsigned char *frame;
-	int w = 10;
-	int demerit;
-	int x;
-
-	frame = (unsigned char *)malloc(w * w);
-
-	testStart("Test mask evaluation (run length penalty check)");
-	for(x=0; x<w; x++) {
-		frame[      x] = x & 1;
-		frame[w   + x] = (x & 1) ^ 1;
-		frame[w*2 + x] = (x / 2) & 1;
-		frame[w*3 + x] = ((x / 2) & 1) ^ 1;
-		frame[w*4 + x] = (x / 3) & 1;
-		frame[w*5 + x] = ((x / 3) & 1) ^ 1;
-		frame[w*6 + x] = (x / 4) & 1;
-		frame[w*7 + x] = ((x / 4) & 1) ^ 1;
-		frame[w*8 + x] = (x / 5) & 1;
-		frame[w*9 + x] = ((x / 5) & 1) ^ 1;
-	}
-	demerit = Mask_evaluateSymbol(w, frame);
-	testEndExp(demerit == N1 * 4 + N2 * 4);
-
-	free(frame);
-}
-
-void test_eval3(void)
-{
-	unsigned char *frame;
-	int w = 15;
-	int demerit;
-	int x, y;
-	static unsigned char pattern[7][15] = {
-		{0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0}, // N3x1
-		{1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1}, // N3x1
-		{1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1}, // N3x1
-		{1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0}, // 0
-		{1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1}, // N3x2
-		{1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0}, // N3 + (N1+1)
-		{1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1}  // (N1+1)
-	};
-
-	frame = (unsigned char *)malloc(w * w);
-
-	testStart("Test mask evaluation (1:1:3:1:1 check)");
-	for(y=0; y<5; y++) {
-		for(x=0; x<w; x++) {
-			frame[w*y*2     + x] = pattern[y][x];
-			frame[w*(y*2+1) + x] = pattern[y][x]^1;
-		}
-	}
-	for(x=0; x<w; x++) {
-		frame[w*10 + x] = x & 1;
-	}
-	for(y=5; y<7; y++) {
-		for(x=0; x<w; x++) {
-			frame[w*(y*2+1) + x] = pattern[y][x];
-			frame[w*(y*2+2) + x] = pattern[y][x]^1;
-		}
-	}
-	demerit = Mask_evaluateSymbol(w, frame);
-	testEndExp(demerit == N3 * 6 + (N1 + 1) * 4);
-
-	free(frame);
 }
 
 unsigned int m1pat[8][21] = {
@@ -488,10 +442,11 @@ void test_encodeTooLong(void)
 	data[4299] = '\0';
 
 	code = QRcode_encodeString(data, 0, QR_ECLEVEL_L, QR_MODE_8, 0);
-	testEndExp(code == NULL);
+	assert_null(code, "Too large data is incorrectly accepted.\n");
+	assert_equal(errno, ERANGE, "errno != ERANGE\n");
+	testFinish();
 
 	if(code != NULL) {
-		printf("%d, %d\n", code->version, code->width);
 		QRcode_free(code);
 	}
 	free(data);
@@ -544,21 +499,12 @@ void print_01234567(void)
 {
 	QRinput *stream;
 	char num[9] = "01234567";
-	unsigned char *frame;
-	int x, y, w;
 	QRcode *qrcode;
 
 	stream = QRinput_new2(1, QR_ECLEVEL_M);
 	QRinput_append(stream, QR_MODE_NUM, 8, (unsigned char *)num);
 	qrcode = QRcode_encodeInput(stream);
-	w = qrcode->width;
-	frame = qrcode->data;
-	for(y=0; y<w; y++) {
-		for(x=0; x<w; x++) {
-			printf("%02x ", frame[y*w+x]);
-		}
-		printf("\n");
-	}
+	printQRcode(qrcode);
 	QRinput_free(stream);
 	QRcode_free(qrcode);
 }
@@ -663,17 +609,281 @@ void test_null_free(void)
 	testFinish();
 }
 
-int main(int argc, char **argv)
+void test_encodeTooLongMQR(void)
+{
+	QRcode *code;
+	char *data[] = {"012345", "ABC0EFG", "0123456789", "0123456789ABCDEFG"};
+
+	testStart("Encode too large data for MQR.");
+
+	code = QRcode_encodeStringMQR(data[0], 1, QR_ECLEVEL_L, QR_MODE_8, 0);
+	assert_null(code, "6 byte length numeric string was accepted to version 1.\n");
+	assert_equal(errno, ERANGE, "errno != ERANGE\n");
+	code = QRcode_encodeStringMQR(data[1], 2, QR_ECLEVEL_L, QR_MODE_8, 0);
+	assert_null(code, "7 byte length alphanumeric string was accepted to version 2.\n");
+	assert_equal(errno, ERANGE, "errno != ERANGE\n");
+	code = QRcode_encodeString8bitMQR(data[2], 3, QR_ECLEVEL_L);
+	assert_null(code, "9 byte length 8bit string was accepted to version 3.\n");
+	assert_equal(errno, ERANGE, "errno != ERANGE\n");
+	code = QRcode_encodeString8bitMQR(data[3], 4, QR_ECLEVEL_L);
+	assert_null(code, "16 byte length 8bit string was accepted to version 4.\n");
+	assert_equal(errno, ERANGE, "errno != ERANGE\n");
+	testFinish();
+
+	if(code != NULL) {
+		printQRcode(code);
+		QRcode_free(code);
+	}
+}
+
+void test_mqrraw_new(void)
+{
+	QRinput *stream;
+	char *num = "01234";
+	unsigned char datacode[] = {0xa0, 0x62, 0x02};
+	MQRRawCode *raw;
+
+	testStart("Test MQRRaw_new()");
+	stream = QRinput_newMQR(1, QR_ECLEVEL_L);
+	QRinput_append(stream, QR_MODE_NUM, 5, (unsigned char *)num);
+
+	raw = MQRraw_new(stream);
+	assert_nonnull(raw, "Failed MQRraw_new().\n");
+	assert_zero(raw->count, "MQRraw.count = %d != 0\n", raw->count);
+	assert_equal(raw->version, 1, "MQRraw.version was not as expected. (%d)\n", raw->version);
+	assert_equal(raw->dataLength, 3, "MQRraw.dataLength was not as expected.\n");
+	assert_equal(raw->eccLength, 2, "MQRraw.eccLength was not as expected.\n");
+	assert_zero(memcmp(raw->datacode, datacode, 3), "Datacode doesn't match.\n");
+
+
+	QRinput_free(stream);
+	MQRraw_free(raw);
+	testFinish();
+}
+
+void test_encodeData(void)
+{
+	QRcode *qrcode;
+
+	testStart("Test QRencode_encodeData.");
+	qrcode = QRcode_encodeData(0, NULL, 0, QR_ECLEVEL_H);
+	assert_null(qrcode, "QRcode_encodeData(NULL, 0) returned something.\n");
+	if(qrcode != NULL) QRcode_free(qrcode);
+
+	qrcode = QRcode_encodeData(10, (unsigned char*)"test\0\0test", 0, QR_ECLEVEL_H);
+	assert_nonnull(qrcode, "QRcode_encodeData() failed.\n");
+	if(qrcode != NULL) QRcode_free(qrcode);
+
+	testFinish();
+}
+
+void test_formatInfo(void)
+{
+	QRcode *qrcode;
+	QRecLevel level;
+	int mask;
+	int ret;
+
+	testStart("Test format info in QR code.");
+	qrcode = QRcode_encodeString("AC-42", 1, QR_ECLEVEL_H, QR_MODE_8, 1);
+	ret = QRcode_decodeFormat(qrcode, &level, &mask);
+	assert_zero(ret, "Failed to decode.\n");
+	assert_equal(level, QR_ECLEVEL_H, "Decoded format is wrong.\n");
+
+	if(qrcode != NULL) QRcode_free(qrcode);
+
+	testFinish();
+}
+
+void test_formatInfoMQR(void)
+{
+	QRcode *qrcode;
+	QRecLevel level;
+	int version, mask;
+	int i, ret;
+
+	testStart("Test format info in Micro QR code.");
+	for(i=0; i<8; i++) {
+		qrcode = QRcode_encodeStringMQR("1",
+										MQRformat[i].version,
+										MQRformat[i].level,
+										QR_MODE_8, 1);
+		ret = QRcode_decodeFormatMQR(qrcode, &version, &level, &mask);
+		assert_zero(ret, "Failed to decode.\n");
+		assert_equal(MQRformat[i].version, version, "Decoded verion is wrong.\n");
+		assert_equal(MQRformat[i].level, level, "Decoded level is wrong.\n");
+		QRcode_free(qrcode);
+	}
+
+	testFinish();
+}
+
+void test_decodeSimple(void)
+{
+	char *str = "AC-42";
+	QRcode *qrcode;
+	QRdata *qrdata;
+
+	testStart("Test code words.");
+	qrcode = QRcode_encodeString(str, 1, QR_ECLEVEL_H, QR_MODE_8, 1);
+	qrdata = QRcode_decode(qrcode);
+
+	assert_nonnull(qrdata, "Failed to decode.\n");
+	if(qrdata != NULL) {
+		assert_equal(strlen(str), qrdata->size, "Lengths of input/output mismatched: %d, expected %d.\n", qrdata->size, (int)strlen(str));
+		assert_zero(strncmp(str, (char *)(qrdata->data), qrdata->size), "Decoded data %s is different from the original %s\n", qrdata->data, str);
+	}
+	if(qrdata != NULL) QRdata_free(qrdata);
+	if(qrcode != NULL) QRcode_free(qrcode);
+
+	testFinish();
+}
+
+
+void test_decodeLong(void)
+{
+	char *str = "12345678901234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ?????????????";
+	QRcode *qrcode;
+	QRdata *qrdata;
+
+	testStart("Test code words (long, splitted).");
+	qrcode = QRcode_encodeString(str, 0, QR_ECLEVEL_H, QR_MODE_8, 1);
+	qrdata = QRcode_decode(qrcode);
+
+	assert_nonnull(qrdata, "Failed to decode.\n");
+	if(qrdata != NULL) {
+		assert_equal(strlen(str), qrdata->size, "Lengths of input/output mismatched.\n");
+		assert_zero(strncmp(str, (char *)(qrdata->data), qrdata->size), "Decoded data %s is different from the original %s\n", qrdata->data, str);
+	}
+	if(qrdata != NULL) QRdata_free(qrdata);
+	if(qrcode != NULL) QRcode_free(qrcode);
+
+	testFinish();
+}
+
+void test_decodeVeryLong(void)
+{
+	char str[4000];
+	int i;
+	QRcode *qrcode;
+	QRdata *qrdata;
+
+	testStart("Test code words (very long string).");
+
+	for(i=0; i<3999; i++) {
+		str[i] = decodeAnTable[(int)drand(45)];
+	}
+	str[3999] = '\0';
+
+	qrcode = QRcode_encodeString(str, 0, QR_ECLEVEL_L, QR_MODE_8, 0);
+	qrdata = QRcode_decode(qrcode);
+
+	assert_nonnull(qrdata, "Failed to decode.\n");
+	if(qrdata != NULL) {
+		assert_equal(strlen(str), qrdata->size, "Lengths of input/output mismatched.\n");
+		assert_zero(strncmp(str, (char *)(qrdata->data), qrdata->size), "Decoded data %s is different from the original %s\n", qrdata->data, str);
+	}
+	if(qrdata != NULL) QRdata_free(qrdata);
+	if(qrcode != NULL) QRcode_free(qrcode);
+
+	testFinish();
+}
+
+void test_decodeShortMQR(void)
+{
+	char str[]="55";
+	QRcode *qrcode;
+	QRdata *qrdata;
+	int i;
+
+	testStart("Test code words (MQR).");
+	for(i=0; i<8; i++) {
+		qrcode = QRcode_encodeStringMQR(str,
+										MQRformat[i].version,
+										MQRformat[i].level,
+										QR_MODE_8, 1);
+		qrdata = QRcode_decodeMQR(qrcode);
+
+		assert_nonnull(qrdata, "Failed to decode.\n");
+		assert_zero(strcmp((char *)qrdata->data, str), "Decoded data (%s) mismatched (%s)\n", (char *)qrdata->data, str);
+		if(qrdata != NULL) QRdata_free(qrdata);
+		if(qrcode != NULL) QRcode_free(qrcode);
+	}
+
+	testFinish();
+}
+
+void test_mqrencode(void)
+{
+	char *str = "MICROQR";
+	char pattern[] = {
+		"#######_#_#_#_#"
+		"#_____#_#__####"
+		"#_###_#_#_####_"
+		"#_###_#_#__##_#"
+		"#_###_#___#__##"
+		"#_____#____#_#_"
+		"#######__##_#_#"
+		"_________#__#__"
+		"#___#__####_#_#"
+		"_#######_#_##_#"
+		"##___#_#____#__"
+		"_##_#_####____#"
+		"#__###___#__##_"
+		"_###_#_###_#_#_"
+		"##____####_###_"
+	};
+	QRcode qrcode;
+	QRdata *qrdata;
+	unsigned char *frame;
+	int i;
+
+	testStart("Encoding test (MQR).");
+
+	qrcode.width = 15;
+	qrcode.version = 3;
+
+	frame = MQRspec_newFrame(qrcode.version);
+	for(i=0; i<225; i++) {
+		frame[i] ^= (pattern[i] == '#')?1:0;
+	}
+
+	qrcode.data = frame;
+	qrdata = QRcode_decodeMQR(&qrcode);
+	assert_equal(qrdata->version, 3, "Format info decoder returns wrong version number: %d (%d expected)\n", qrdata->version, 3);
+	assert_equal(qrdata->level, 1, "Format info decoder returns wrong level: %d (%d expected)\n", qrdata->level, 1);
+	assert_zero(strcmp((char *)qrdata->data, str), "Decoded data (%s) mismatched (%s)\n", (char *)qrdata->data, str);
+
+	QRdata_free(qrdata);
+	free(frame);
+
+	testFinish();
+}
+
+void test_apiversion(void)
+{
+	int major_version, minor_version, micro_version;
+	char *str, *str2;
+
+	testStart("API Version check");
+	QRcode_APIVersion(&major_version, &minor_version, &micro_version);
+	assert_equal(major_version, MAJOR_VERSION, "Major version number mismatched: %d (%d expected)\n", major_version, MAJOR_VERSION);
+	assert_equal(minor_version, MINOR_VERSION, "Minor version number mismatched: %d (%d expected)\n", minor_version, MINOR_VERSION);
+	assert_equal(micro_version, MICRO_VERSION, "Micro version number mismatched: %d (%d expected)\n", micro_version, MICRO_VERSION);
+	str = QRcode_APIVersionString();
+	str2 = QRcode_APIVersionString();
+	assert_zero(strcmp(VERSION, str), "Version string mismatched: %s (%s expected)\n", str, VERSION);
+	assert_equal(str, str2, "Version strings are not identical.");
+	testFinish();
+}
+
+int main(void)
 {
 	test_iterate();
 	test_iterate2();
-//	print_filler();
-//	test_filler();
-//	print_mask();
+	//print_filler();
+	test_filler();
 	test_format();
-	test_eval();
-	test_eval2();
-	test_eval3();
 	test_encode();
 	test_encode2();
 	test_encode3();
@@ -688,9 +898,22 @@ int main(int argc, char **argv)
 	test_struct_example();
 	test_struct_semilong();
 	test_null_free();
+	test_qrraw_new();
+	test_mqrraw_new();
+	test_encodeData();
+	test_formatInfo();
+	test_decodeSimple();
+	test_decodeLong();
+	test_decodeVeryLong();
+	//print_fillerMQR();
+	test_fillerMQR();
+	test_formatInfoMQR();
+	test_encodeTooLongMQR();
+	test_decodeShortMQR();
+	test_mqrencode();
+	test_apiversion();
 
-	QRspec_clearCache();
-	free_rs_cache();
+	QRcode_clearCache();
 
 	report();
 

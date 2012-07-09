@@ -342,6 +342,7 @@
 				>
 				<FileConfiguration
 					Name="Debug-Dll|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -350,6 +351,7 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-Dll|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"

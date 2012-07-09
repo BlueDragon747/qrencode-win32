@@ -14,6 +14,10 @@ Revisions:
 
 02/03/2011 - Ludvik Jerabek - Initial Release
 02/20/2011 - Ludvik Jerabek - Fixed compiler warnings at Level 4
+07/05/2011 - Ludvik Jerabek - Added no_argument, required_argument, optional_argument defs
+08/03/2011 - Ludvik Jerabek - Fixed non-argument runtime bug which caused runtime exception
+08/09/2011 - Ludvik Jerabek - Added code to export functions for DLL and LIB
+02/15/2012 - Ludvik Jerabek - Fixed _GETOPT_THROW definition missing in implementation file
 
 **DISCLAIMER**
 THIS MATERIAL IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
@@ -31,15 +35,37 @@ EXPRESSLY ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #ifndef __GETOPT_H_
 #define __GETOPT_H_
 
+#ifdef _GETOPT_API
+#undef _GETOPT_API
+#endif
+
+#if defined(EXPORTS_GETOPT) && defined(STATIC_GETOPT)
+#error "The preprocessor definitions of EXPORTS_GETOPT and STATIC_GETOPT can only be used individually"
+#elif defined(STATIC_GETOPT)
+#pragma message("Warning static builds of getopt violate the Lesser GNU Public License")
+#define _GETOPT_API
+#elif defined(EXPORTS_GETOPT)
+#pragma message("Exporting getopt library")
+#define _GETOPT_API __declspec(dllexport)	
+#else
+#pragma message("Importing getopt library")
+#define _GETOPT_API __declspec(dllimport)
+#endif
+
+
 #include <tchar.h>
 
+// Standard GNU options
+#define	null_argument		0 /*Argument Null*/
+#define	no_argument		0 /*Argument Switch Only*/
+#define required_argument	1 /*Argument Required*/
+#define optional_argument	2 /*Argument Optional*/
+
+// Shorter Versions of options
 #define ARG_NULL 0 /*Argument Null*/
 #define ARG_NONE 0 /*Argument Switch Only*/
 #define ARG_REQ 1  /*Argument Required*/
 #define ARG_OPT 2  /*Argument Optional*/
-#define no_argument 0
-#define required_argument 1
-
 
 // Change behavior for C\C++
 #ifdef __cplusplus
@@ -53,10 +79,12 @@ EXPRESSLY ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #endif
 
 _BEGIN_EXTERN_C
-extern TCHAR *optarg;
-extern int optind;
-extern int opterr;
-extern int optopt;
+
+	extern _GETOPT_API TCHAR *optarg;
+extern _GETOPT_API int optind;
+extern _GETOPT_API int opterr;
+extern _GETOPT_API int optopt;
+
 struct option
 {
 	const TCHAR* name;
@@ -64,14 +92,16 @@ struct option
 	int *flag;
 	TCHAR val;
 };
-extern int getopt(int argc, TCHAR *const *argv, const TCHAR *optstring) _GETOPT_THROW;
-extern int getopt_long(int ___argc, TCHAR *const *___argv, const TCHAR *__shortopts, const struct option *__longopts, int *__longind) _GETOPT_THROW;
-extern int getopt_long_only(int ___argc, TCHAR *const *___argv, const TCHAR *__shortopts, const struct option *__longopts, int *__longind) _GETOPT_THROW;
+
+extern _GETOPT_API int getopt(int argc, TCHAR *const *argv, const TCHAR *optstring) _GETOPT_THROW;
+extern _GETOPT_API int getopt_long(int ___argc, TCHAR *const *___argv, const TCHAR *__shortopts, const struct option *__longopts, int *__longind) _GETOPT_THROW;
+extern _GETOPT_API int getopt_long_only(int ___argc, TCHAR *const *___argv, const TCHAR *__shortopts, const struct option *__longopts, int *__longind) _GETOPT_THROW;
 _END_EXTERN_C
 
 // Undefine so the macros are not included
 #undef _BEGIN_EXTERN_C
 #undef _END_EXTERN_C
 #undef _GETOPT_THROW
+#undef _GETOPT_API
 
 #endif  // __GETOPT_H_

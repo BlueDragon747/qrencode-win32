@@ -1,27 +1,42 @@
 LIBRARY   qrcodelib
 DESCRIPTION "QR Code Library"
 EXPORTS
+
 	QRinput_new @1
 	QRinput_new2 @2
-	QRinput_append @3
-	QRinput_getVersion @4
-	QRinput_setVersion @5
-	QRinput_getErrorCorrectionLevel @6
-	QRinput_setErrorCorrectionLevel @7
-	QRinput_free @8
-	QRinput_check @9
-	QRinput_Struct_new @10
-	QRinput_Struct_setParity @11
-	QRinput_Struct_appendInput @12
-	QRinput_Struct_free @13
-	QRinput_splitQRinputToStruct @14
-	QRinput_Struct_insertStructuredAppendHeaders @15
-	QRcode_encodeInput @16
-	QRcode_encodeString @17
-	QRcode_encodeString8bit @18
-	QRcode_free @19
-	QRcode_encodeInputStructured @20
-	QRcode_encodeStringStructured @21
-	QRcode_encodeString8bitStructured @22
-	QRcode_List_size @23
-	QRcode_List_free @24
+	QRinput_newMQR @3
+	QRinput_append @4
+	QRinput_appendECIheader @5
+	QRinput_getVersion @6
+	QRinput_setVersion @7
+	QRinput_getErrorCorrectionLevel @8
+	QRinput_setErrorCorrectionLevel @9
+	QRinput_setVersionAndErrorCorrectionLevel @10
+	QRinput_free @11
+	QRinput_check @12
+	QRinput_Struct_new @13
+	QRinput_Struct_setParity @14
+	QRinput_Struct_appendInput @15
+	QRinput_Struct_free @16
+	QRinput_splitQRinputToStruct @17
+	QRinput_Struct_insertStructuredAppendHeaders @18
+	QRinput_setFNC1First @19
+	QRinput_setFNC1Second @20
+	QRcode_encodeInput @21
+	QRcode_encodeString @22
+	QRcode_encodeString8bit @23
+	QRcode_encodeStringMQR @24
+	QRcode_encodeString8bitMQR @25
+	QRcode_encodeData @26
+	QRcode_encodeDataMQR @27
+	QRcode_free @28
+	QRcode_encodeInputStructured @29
+	QRcode_encodeStringStructured @30
+	QRcode_encodeString8bitStructured @31
+	QRcode_encodeDataStructured @32
+	QRcode_List_size @33
+	QRcode_List_free @34
+	QRcode_APIVersion @35
+	QRcode_APIVersionString @36
+	QRcode_clearCache @37
+

@@ -40,8 +40,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;QRCODELIB_EXPORTS"
+				AdditionalIncludeDirectories=".\,..\qrcode,..\qrcode\png"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;QRCODELIB_EXPORTS;HAVE_CONFIG_H"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -61,7 +61,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies=" libpng15d.lib"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="..\qrcode\png"
 				ModuleDefinitionFile="qrcodelib.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -117,8 +119,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories=".\"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;QRCODELIB_EXPORTS"
+				AdditionalIncludeDirectories=".\,..\qrcode,..\qrcode\png"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;QRCODELIB_EXPORTS;HAVE_CONFIG_H"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -136,7 +138,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="libpng15.lib"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\qrcode\png"
 				ModuleDefinitionFile="qrcodelib.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -194,8 +198,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;QRCODELIB_EXPORTS"
+				AdditionalIncludeDirectories=".\,..\qrcode,..\qrcode\png"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;QRCODELIB_EXPORTS;HAVE_CONFIG_H"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -257,8 +261,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories=".\"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;QRCODELIB_EXPORTS"
+				AdditionalIncludeDirectories=".\,..\qrcode,..\qrcode\png"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;QRCODELIB_EXPORTS;HAVE_CONFIG_H"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -339,6 +343,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\qrcode\getopt.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\mask.c"
 				>
 			</File>
@@ -347,15 +355,31 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\mmask.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\mmask.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\mqrspec.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\mqrspec.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\qrenc.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\qrencode.c"
 				>
 			</File>
 			<File
 				RelativePath="..\..\qrencode.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\qrencode_inner.h"
 				>
 			</File>
 			<File

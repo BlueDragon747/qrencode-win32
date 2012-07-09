@@ -14,6 +14,10 @@ Revisions:
 
 02/03/2011 - Ludvik Jerabek - Initial Release
 02/20/2011 - Ludvik Jerabek - Fixed compiler warnings at Level 4
+07/05/2011 - Ludvik Jerabek - Added no_argument, required_argument, optional_argument defs
+08/03/2011 - Ludvik Jerabek - Fixed non-argument runtime bug which caused runtime exception
+08/09/2011 - Ludvik Jerabek - Added code to export functions for DLL and LIB
+02/15/2012 - Ludvik Jerabek - Fixed _GETOPT_THROW definition missing in implementation file
 
 **DISCLAIMER**
 THIS MATERIAL IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
@@ -34,6 +38,12 @@ EXPRESSLY ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #include <stdio.h>
 #include "getopt.h"
 
+#ifdef __cplusplus
+#define _GETOPT_THROW throw()
+#else
+#define _GETOPT_THROW
+#endif
+
 enum ENUM_ORDERING { REQUIRE_ORDER, PERMUTE, RETURN_IN_ORDER };
 
 struct _getopt_data
@@ -53,7 +63,6 @@ struct _getopt_data
 static struct _getopt_data getopt_data;
 
 TCHAR *optarg;
-
 int optind = 1;
 int opterr = 1;
 int optopt = _T('?');
@@ -305,7 +314,7 @@ int _getopt_internal_r (int argc, TCHAR *const *argv, const TCHAR *optstring, co
 						_ftprintf(stderr, _T("%s: unrecognized option '%c%s'\n"),argv[0], argv[d->optind][0], d->__nextchar);
 					}
 				}
-				d->__nextchar = (TCHAR *) "";
+				d->__nextchar = (TCHAR *)_T("");
 				d->optind++;
 				d->optopt = 0;
 				return _T('?');
@@ -498,12 +507,12 @@ int _getopt_internal (int argc, TCHAR *const *argv, const TCHAR *optstring, cons
 	return result;
 }
 
-int getopt (int argc, TCHAR *const *argv, const TCHAR *optstring)
+int getopt (int argc, TCHAR *const *argv, const TCHAR *optstring) _GETOPT_THROW
 {
 	return _getopt_internal (argc, argv, optstring, (const struct option *) 0, (int *) 0, 0, 0);
 }
 
-int getopt_long (int argc, TCHAR *const *argv, const TCHAR *options, const struct option *long_options, int *opt_index)
+int getopt_long (int argc, TCHAR *const *argv, const TCHAR *options, const struct option *long_options, int *opt_index) _GETOPT_THROW
 {
 	return _getopt_internal (argc, argv, options, long_options, opt_index, 0, 0);
 }
@@ -513,7 +522,7 @@ int _getopt_long_r (int argc, TCHAR *const *argv, const TCHAR *options, const st
 	return _getopt_internal_r (argc, argv, options, long_options, opt_index,0, d, 0);
 }
 
-int getopt_long_only (int argc, TCHAR *const *argv, const TCHAR *options, const struct option *long_options, int *opt_index)
+int getopt_long_only (int argc, TCHAR *const *argv, const TCHAR *options, const struct option *long_options, int *opt_index) _GETOPT_THROW
 {
 	return _getopt_internal (argc, argv, options, long_options, opt_index, 1, 0);
 }

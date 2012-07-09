@@ -168,7 +168,7 @@ INT_PTR CALLBACK ImageWnd(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			myImage = new Image(gpFileSession->GetImagePath(), true);
 		
 			FileUtils fu;
-			LayoutCalc lc(myImage->GetHeight(), myImage->GetHeight());
+			LayoutCalc lc(myImage->GetWidth(), myImage->GetHeight());
 
 			SetWindowPos(hDlg, NULL, _wtoi(fu.GetIniValue(L"outputx")), 
 				_wtoi(fu.GetIniValue(L"outputy")), lc.w7(), lc.h7(), SWP_NOZORDER);
@@ -187,7 +187,7 @@ INT_PTR CALLBACK ImageWnd(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 		    hdc = BeginPaint(hDlg, &ps);
 			Graphics graphics(hdc);
-			graphics.DrawImage(myImage, LayoutCalc::mw, LayoutCalc::mw);
+			graphics.DrawImage(myImage, LayoutCalc::mw, LayoutCalc::mw, myImage->GetHeight(), myImage->GetHeight());
 			EndPaint(hDlg, &ps);
 		}
 		return (INT_PTR)FALSE;
