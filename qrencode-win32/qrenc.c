@@ -26,6 +26,8 @@
 #include <stdlib.h>
 #include <png.h>
 #include <getopt.h>
+#include <fcntl.h>
+#include <io.h>
 
 #include "qrencode.h"
 
@@ -183,6 +185,7 @@ static FILE *openFile(const char *outfile)
 
 	if(outfile == NULL || (outfile[0] == '-' && outfile[1] == '\0')) {
 		fp = stdout;
+		_setmode(_fileno(stdout), O_BINARY);
 	} else {
 		fp = fopen(outfile, "wb");
 		if(fp == NULL) {
@@ -213,6 +216,7 @@ static int writePNG(QRcode *qrcode, const char *outfile)
 
 	if(outfile[0] == '-' && outfile[1] == '\0') {
 		fp = stdout;
+		_setmode(_fileno(stdout), O_BINARY);
 	} else {
 		fp = fopen(outfile, "wb");
 		if(fp == NULL) {
