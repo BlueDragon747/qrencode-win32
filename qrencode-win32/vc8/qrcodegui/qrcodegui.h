@@ -28,8 +28,8 @@ public:
 	int h3() { return bh; };
 
 
-	int w7() { return mw + m_w + mw + bw + mw; };
-	int h7() { return mw + m_h + mw + mw + mw; };
+	int w7() { return mw + m_w + mw + bw + mw + 2*mw; };
+	int h7() { return mw + m_h + mw + mw + mw + 2*mw; };
 
 	int x8() { return mw + m_w + mw; };
 	int y8() { return mw; };

@@ -187,7 +187,7 @@ INT_PTR CALLBACK ImageWnd(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 		    hdc = BeginPaint(hDlg, &ps);
 			Graphics graphics(hdc);
-			graphics.DrawImage(myImage, LayoutCalc::mw, LayoutCalc::mw, myImage->GetHeight(), myImage->GetHeight());
+			graphics.DrawImage(myImage, LayoutCalc::mw, LayoutCalc::mw, myImage->GetWidth(), myImage->GetHeight());
 			EndPaint(hDlg, &ps);
 		}
 		return (INT_PTR)FALSE;

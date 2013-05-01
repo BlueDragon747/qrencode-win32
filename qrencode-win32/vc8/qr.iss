@@ -13,10 +13,10 @@ OutputBaseFilename=qrcodegui_setup-3.4.2b
 
 [Files]
 Source: "settings.ini"; DestDir: "{userappdata}\QRCodeGui"
-Source: ".\.build\release-lib\qrcodegui.exe"; DestDir: "{app}"
-Source: ".\.build\release-lib\qrcodecon.exe"; DestDir: "{app}"
-Source: ".\.build\release-lib\qrcode.exe"; DestDir: "{app}"
-Source: ".\test.bat"; DestDir: "{app}"
+Source: ".\.build\release-lib\qrcodegui.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\.build\release-lib\qrcodecon.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\.build\release-lib\qrcode.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\test.bat"; DestDir: "{app}"; Flags: ignoreversion
 
 [Run]
 Filename: "{app}\qrcodegui.exe"; Description: "Open QRCodeGui after finish"; Flags: postinstall
