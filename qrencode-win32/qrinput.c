@@ -1618,16 +1618,19 @@ QRinput_Struct *QRinput_splitQRinputToStruct(QRinput *input)
 			list = list->next;
 		} else {
 			bytes = QRinput_lengthOfCode(list->mode, input->version, maxbits - bits);
+			p = QRinput_new2(input->version, input->level);
+			if(p == NULL) goto ABORT;
 			if(bytes > 0) {
 				/* Splits this entry into 2 entries. */
 				ret = QRinput_splitEntry(list, bytes);
-				if(ret < 0) goto ABORT;
+				if(ret < 0) {
+					QRinput_free(p);
+					goto ABORT;
+				}
 				/* First half is the tail of the current input. */
 				next = list->next;
 				list->next = NULL;
 				/* Second half is the head of the next input, p.*/
-				p = QRinput_new2(input->version, input->level);
-				if(p == NULL) goto ABORT;
 				p->head = next;
 				/* Renew QRinput.tail. */
 				p->tail = input->tail;
@@ -1638,19 +1641,21 @@ QRinput_Struct *QRinput_splitQRinputToStruct(QRinput *input)
 			} else {
 				/* Current entry will go to the next input. */
 				prev->next = NULL;
-				p = QRinput_new2(input->version, input->level);
-				if(p == NULL) goto ABORT;
 				p->head = list;
 				p->tail = input->tail;
 				input->tail = prev;
 			}
 			ret = QRinput_Struct_appendInput(s, input);
-			if(ret < 0) goto ABORT;
+			if(ret < 0) {
+				QRinput_free(p);
+				goto ABORT;
+			}
 			input = p;
 			bits = 0;
 		}
 	}
-	QRinput_Struct_appendInput(s, input);
+	ret = QRinput_Struct_appendInput(s, input);
+	if(ret < 0) goto ABORT;
 	if(s->size > MAX_STRUCTURED_SYMBOLS) {
 		QRinput_Struct_free(s);
 		errno = ERANGE;

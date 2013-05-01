@@ -1,4 +1,4 @@
-%define ver 3.3.1
+%define ver 3.4.2
 %define rel 1
 
 Name:           qrencode

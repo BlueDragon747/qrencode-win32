@@ -9,7 +9,7 @@ Compression=lzma2
 SolidCompression=yes
 LicenseFile=..\COPYING
 OutputDir=.\.build\setup
-OutputBaseFilename=qrcodegui_setup-3.3.1b
+OutputBaseFilename=qrcodegui_setup-3.4.2b
 
 [Files]
 Source: "settings.ini"; DestDir: "{userappdata}\QRCodeGui"
