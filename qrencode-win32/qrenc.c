@@ -1099,6 +1099,9 @@ int main(int argc, char **argv)
 		length = strlen((char *)intext);
 	}
 	if(intext == NULL) {
+		if(eightbit) { 
+			setmode( fileno( stdin ), _O_BINARY );
+		}
 		intext = readStdin(&length);
 	}
 
