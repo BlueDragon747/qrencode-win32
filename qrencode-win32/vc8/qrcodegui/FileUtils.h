@@ -22,13 +22,13 @@ public:
 	~FileSession();
 
 	void Reset();
-	BOOL Generate(CString strPixel, CString strMargin, CString strError, CString strText);
+	BOOL Generate(CString strPixel, CString strMargin, CString strError, CString strText, long fgcolor, long bgcolor);
 
 	void CopyImageTo(CString strNewPath);
 	CString GetErrorMessage() { return m_strErrorMsg; };
 	CString GetImagePath() { return m_strImageFile; };
 protected:
-	BOOL RunQRcode(CString strPixel, CString strMargin, CString strError);
+	BOOL RunQRcode(CString strPixel, CString strMargin, CString strError, long fgcolor, long bgcolor);
 
 protected:
 	CString m_strTextFile;

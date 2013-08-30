@@ -89,10 +89,19 @@ void FileSession::CopyImageTo(CString strNewPath)
 		::CopyFile(m_strImageFile, strNewPath, FALSE);
 }
 
-BOOL FileSession::RunQRcode(CString strPixel, CString strMargin, CString strError)
+BOOL FileSession::RunQRcode(CString strPixel, CString strMargin, CString strError, long fgcolor, long bgcolor)
 {
 	CString strCmd;
-	strCmd.Format(L"cmd.exe /c qrcode.exe -s %s -m %s -l %c -o %s 2> %s < %s", 
+	CString strFgColorPart;
+	CString strBgColorPart;
+	if(fgcolor)
+		strFgColorPart.Format(L"--foreground=%06X ", fgcolor);
+	if(bgcolor)
+		strBgColorPart.Format(L"--background=%06X ", bgcolor);
+
+	strCmd.Format(L"cmd.exe /c qrcode.exe %s%s-s %s -m %s -l %c -o %s 2> %s < %s", 
+		strFgColorPart,
+		strBgColorPart,
 		strPixel,
 		strMargin, 
 		strError[0],
@@ -134,11 +143,12 @@ BOOL FileSession::RunQRcode(CString strPixel, CString strMargin, CString strErro
 	return TRUE;
 }
 
-BOOL FileSession::Generate(CString strPixel, CString strMargin, CString strError, CString strText)
+BOOL FileSession::Generate(CString strPixel, CString strMargin, CString strError, CString strText, long fgcolor, long bgcolor)
 {
 	Reset();
 
 	DWORD dwWritten = 0;
+	long micro_version = 0;
 	wchar_t lpTempPathBuffer[MAX_PATH];
 	wchar_t szTempFileName[MAX_PATH];
 	GetTempPath(MAX_PATH, lpTempPathBuffer); 
@@ -150,8 +160,11 @@ BOOL FileSession::Generate(CString strPixel, CString strMargin, CString strError
 	DWORD len = ::WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)strText, strText.GetLength(), buf, 7*32*1024, NULL, NULL);
 
 	if(!len)
-		DWORD res = GetLastError();
-
+	{
+		m_strErrorMsg = "Conversion to UTF-8 string failed.";
+		return FALSE;
+	}
+	
 	HANDLE hFile = ::CreateFile(m_strTextFile, GENERIC_WRITE, 0, NULL, 
 		OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	::WriteFile(hFile, buf, len, &dwWritten, NULL);
@@ -163,7 +176,7 @@ BOOL FileSession::Generate(CString strPixel, CString strMargin, CString strError
 	GetTempFileName(lpTempPathBuffer, TEXT("QRR"), 0, szTempFileName);
 	m_strResultFile = szTempFileName;
 
-	if(!RunQRcode(strPixel, strMargin, strError))
+	if(!RunQRcode(strPixel, strMargin, strError, fgcolor, bgcolor))
 	{
 		m_strErrorMsg = "QRCode.exe execution failed.";
 		return FALSE;

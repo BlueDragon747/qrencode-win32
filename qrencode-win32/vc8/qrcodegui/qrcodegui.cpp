@@ -19,6 +19,8 @@ ULONG_PTR           gdiplusToken;
 // Forward declarations of functions included in this code module:
 INT_PTR CALLBACK	MainWnd(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	ImageWnd(HWND, UINT, WPARAM, LPARAM);
+long FixColor(wchar_t*szColor);
+void DrawColoredRect(HWND, long, long);
 
 
 
@@ -79,6 +81,8 @@ INT_PTR CALLBACK MainWnd(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			FileUtils fu;
 			SetWindowText(GetDlgItem(hDlg, IDC_EDIT_PIXEL), fu.GetIniValue(L"pixel"));
 			SetWindowText(GetDlgItem(hDlg, IDC_EDIT_MARGIN), fu.GetIniValue(L"margin"));
+			SetWindowText(GetDlgItem(hDlg, IDC_EDIT_FGCOLOR), fu.GetIniValue(L"fgcolor").IsEmpty() ? L"#000000" : fu.GetIniValue(L"fgcolor"));
+			SetWindowText(GetDlgItem(hDlg, IDC_EDIT_BGCOLOR), fu.GetIniValue(L"bgcolor").IsEmpty() ? L"#FFFFFF" : fu.GetIniValue(L"bgcolor"));
 
 			SendMessage(GetDlgItem(hDlg, IDC_COMBO_LEVEL), CB_ADDSTRING, 0, (LPARAM)L"L (lowest)"); 
 			SendMessage(GetDlgItem(hDlg, IDC_COMBO_LEVEL), CB_ADDSTRING, 0, (LPARAM)L"M"); 
@@ -124,12 +128,16 @@ INT_PTR CALLBACK MainWnd(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			wchar_t szPixel[1024];
 			wchar_t szMargin[1024];
 			wchar_t szLevel[1024];
+			wchar_t szFgColor[1024];
+			wchar_t szBgColor[1024];
 			wchar_t szText[32*1024];
 			GetWindowText(GetDlgItem(hDlg, IDC_EDIT_PIXEL), szPixel, 1024);
 			GetWindowText(GetDlgItem(hDlg, IDC_EDIT_MARGIN), szMargin, 1024);
 			GetWindowText(GetDlgItem(hDlg, IDC_COMBO_LEVEL), szLevel, 1024);
+			GetWindowText(GetDlgItem(hDlg, IDC_EDIT_FGCOLOR), szFgColor, 1024);
+			GetWindowText(GetDlgItem(hDlg, IDC_EDIT_BGCOLOR), szBgColor, 1024);
 			GetWindowText(GetDlgItem(hDlg, IDC_EDIT_TEXT), szText, 32*1024);
-			BOOL bRes = gpFileSession->Generate(szPixel, szMargin, szLevel, szText);
+			BOOL bRes = gpFileSession->Generate(szPixel, szMargin, szLevel, szText, FixColor(szFgColor), FixColor(szBgColor));
 			if(bRes)
 			{
 				DialogBox(hInst, MAKEINTRESOURCE(IDD_IMAGE), hDlg, ImageWnd);
@@ -143,6 +151,8 @@ INT_PTR CALLBACK MainWnd(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			fu.SetIniValue(L"pixel", szPixel);
 			fu.SetIniValue(L"margin", szMargin);
 			fu.SetIniValue(L"level", szLevel);
+			fu.SetIniValue(L"fgcolor",szFgColor);
+			fu.SetIniValue(L"bgcolor",szBgColor);
 
 			return (INT_PTR)TRUE;
 		}
@@ -150,6 +160,24 @@ INT_PTR CALLBACK MainWnd(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			BOOL bEnable = !!GetWindowTextLength(GetDlgItem(hDlg, IDC_EDIT_TEXT));
 			EnableWindow(GetDlgItem(hDlg, IDOK), bEnable);
+		}
+		if((HIWORD(wParam) == EN_KILLFOCUS) && (LOWORD(wParam) == IDC_EDIT_FGCOLOR))
+		{
+			wchar_t szColor[1024];
+			GetWindowText(GetDlgItem(hDlg, IDC_EDIT_FGCOLOR), szColor, 1024);
+			long color = FixColor(szColor);
+			DrawColoredRect(hDlg, IDC_EDIT_FGCOLOR, color);
+			SetWindowText(GetDlgItem(hDlg, IDC_EDIT_FGCOLOR), szColor);
+			return (INT_PTR)TRUE;
+		}
+		if((HIWORD(wParam) == EN_KILLFOCUS) && (LOWORD(wParam) == IDC_EDIT_BGCOLOR))
+		{
+			wchar_t szColor[1024];
+			GetWindowText(GetDlgItem(hDlg, IDC_EDIT_BGCOLOR), szColor, 1024);
+			long color = FixColor(szColor);
+			DrawColoredRect(hDlg, IDC_EDIT_BGCOLOR, color);
+			SetWindowText(GetDlgItem(hDlg, IDC_EDIT_BGCOLOR), szColor);
+			return (INT_PTR)TRUE;
 		}
 		break;
 	}
@@ -237,6 +265,7 @@ INT_PTR CALLBACK ImageWnd(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			return (INT_PTR)TRUE;
 		}
 		break;
+
 	case WM_DESTROY:
 		{
 			delete myImage;
@@ -247,3 +276,42 @@ INT_PTR CALLBACK ImageWnd(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	return (INT_PTR)FALSE;
 }
 
+
+
+long FixColor(wchar_t* szColor)
+{
+	long color = 0;
+	if(szColor[0] == L'#')
+		swscanf_s(szColor+1, L"%x", &color);
+	else
+		swscanf_s(szColor, L"%x", &color);
+
+	color &= 0xFFFFFF;
+	swprintf_s(szColor, 1024, L"#%06X",color);
+	return color;
+}
+
+void DrawColoredRect(HWND hWnd, long nElement, long nColor)
+{
+	HDC hdc = GetDC(hWnd);
+
+	HWND hItem = GetDlgItem(hWnd, nElement);
+	RECT rc;
+	GetWindowRect(hItem, &rc);
+	POINT pt1;
+	POINT pt2; 
+	pt1.x = rc.left; pt1.y = rc.top;
+	pt2.x = rc.right; pt2.y = rc.bottom;
+	ScreenToClient(hWnd, &pt1);
+	ScreenToClient(hWnd, &pt2);
+	rc.left = pt1.x; rc.top = pt1.y;
+	rc.right = pt2.x; rc.bottom = pt2.y;
+	
+	rc.left = rc.right;
+	rc.right = rc.right + (rc.bottom - rc.top);
+	HBRUSH hBrush = CreateSolidBrush( ((nColor & 0xff0000) >> 16) | (nColor & 0xff00) | ((nColor & 0xff) << 16));
+	FillRect(hdc, &rc, hBrush);
+
+	DeleteObject(hBrush);
+	ReleaseDC(hWnd, hdc);
+}
