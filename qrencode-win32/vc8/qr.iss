@@ -1,7 +1,7 @@
 
 [Setup]
 AppName=QRCodeGui
-AppVersion=1.0
+AppVersion=3.4.4.0
 DefaultDirName={pf}\QRCodeGui
 DefaultGroupName=QRCodeGui
 UninstallDisplayIcon={app}\qrcodegui.exe
@@ -9,7 +9,7 @@ Compression=lzma2
 SolidCompression=yes
 LicenseFile=..\COPYING
 OutputDir=.\.build\setup
-OutputBaseFilename=qrcodegui_setup-3.4.2d
+OutputBaseFilename=qrcodegui_setup-3.4.4
 
 [Files]
 Source: "settings.ini"; DestDir: "{userappdata}\QRCodeGui"

@@ -1,9 +1,9 @@
 
 
 #define MAJOR_VERSION 3
-#define MINOR_VERSION 3
-#define MICRO_VERSION 1
-#define VERSION "3.3.1"
+#define MINOR_VERSION 4
+#define MICRO_VERSION 4
+#define VERSION "3.4.4"
 
 #define __STATIC static
 
