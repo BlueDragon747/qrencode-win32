@@ -1,10 +1,8 @@
-/*-*- Mode: C; c-basic-offset: 8; indent-tabs-mode: t -*-*/
-
 /**
  * qrencode - QR Code encoder
  *
  * QR Code encoding tool
- * Copyright (C) 2006-2012 Kentaro Fukuchi <kentaro@fukuchi.org>
+ * Copyright (C) 2006-2013 Kentaro Fukuchi <kentaro@fukuchi.org>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -43,11 +41,14 @@ static int size = 3;
 static int margin = -1;
 static int dpi = 72;
 static int structured = 0;
+static int rle = 0;
 static int micro = 0;
 static QRecLevel level = QR_ECLEVEL_L;
 static QRencodeMode hint = QR_MODE_8;
 static unsigned int fg_color[4] = {0, 0, 0, 255};
 static unsigned int bg_color[4] = {255, 255, 255, 255};
+
+static int verbose = 0;
 
 enum imageType {
 	PNG_TYPE,
@@ -77,10 +78,12 @@ static const struct option options[] = {
 	{"casesensitive", no_argument      , NULL, 'c'},
 	{"ignorecase"   , no_argument      , NULL, 'i'},
 	{"8bit"         , no_argument      , NULL, '8'},
+	{"rle"          , no_argument      , &rle,   1},
 	{"micro"        , no_argument      , NULL, 'M'},
-	{"foreground"	, required_argument, NULL, 'f'},
-	{"background"	, required_argument, NULL, 'b'},
+	{"foreground"   , required_argument, NULL, 'f'},
+	{"background"   , required_argument, NULL, 'b'},
 	{"version"      , no_argument      , NULL, 'V'},
+	{"verbose"      , no_argument      , &verbose, 1},
 	{NULL, 0, NULL, 0}
 };
 
@@ -109,9 +112,10 @@ static void usage(int help, int longopt)
 "               specify error correction level from L (lowest) to H (highest).\n"
 "               (default=L)\n\n"
 "  -v NUMBER, --symversion=NUMBER\n"
-"               specify the version of the symbol. (default=auto)\n\n"
+"               specify the version of the symbol. See SYMBOL VERSIONS for more\n"
+"               information. (default=auto)\n\n"
 "  -m NUMBER, --margin=NUMBER\n"
-"               specify the width of the margins. (default=4 (2 for Micro)))\n\n"
+"               specify the width of the margins. (default=4 (2 for Micro QR)))\n\n"
 "  -d NUMBER, --dpi=NUMBER\n"
 "               specify the DPI of the generated PNG. (default=72)\n\n"
 "  -t {PNG,EPS,SVG,ANSI,ANSI256,ASCII,ASCIIi,UTF8,ANSIUTF8}, --type={PNG,EPS,\n"
@@ -125,16 +129,28 @@ static void usage(int help, int longopt)
 "  -i, --ignorecase\n"
 "               ignore case distinctions and use only upper-case characters.\n\n"
 "  -8, --8bit   encode entire data in 8-bit mode. -k, -c and -i will be ignored.\n\n"
+"      --rle    enable run-length encoding for SVG.\n\n"
 "  -M, --micro  encode in a Micro QR Code. (experimental)\n\n"
-"  --foreground=RRGGBB[AA]\n"
-"  --background=RRGGBB[AA]\n"
+"      --foreground=RRGGBB[AA]\n"
+"      --background=RRGGBB[AA]\n"
 "               specify foreground/background color in hexadecimal notation.\n"
 "               6-digit (RGB) or 8-digit (RGBA) form are supported.\n"
 "               Color output support available only in PNG and SVG.\n"
 "  -V, --version\n"
 "               display the version number and copyrights of the qrencode.\n\n"
+"      --verbose\n"
+"               display verbose information to stderr.\n\n"
 "  [STRING]     input data. If it is not specified, data will be taken from\n"
-"               standard input.\n"
+"               standard input.\n\n"
+"*SYMBOL VERSIONS\n"
+"               The symbol versions of QR Code range from Version 1 to Version\n"
+"               40. Each version has a different module configuration or number\n"
+"               of modules, ranging from Version 1 (21 x 21 modules) up to\n"
+"               Version 40 (177 x 177 modules). Each higher version number\n"
+"               comprises 4 additional modules per side by default. See\n"
+"               http://www.qrcode.com/en/about/version.html for a detailed\n"
+"               version list.\n"
+
 			);
 		} else {
 			fprintf(stderr,
@@ -289,6 +305,10 @@ static int writePNG(QRcode *qrcode, const char *outfile)
 	}
 
 	palette = (png_colorp) malloc(sizeof(png_color) * 2);
+	if(palette == NULL) {
+		fprintf(stderr, "Failed to allocate memory.\n");
+		exit(EXIT_FAILURE);
+	}
 	palette[0].red   = fg_color[0];
 	palette[0].green = fg_color[1];
 	palette[0].blue  = fg_color[2];
@@ -354,6 +374,7 @@ static int writePNG(QRcode *qrcode, const char *outfile)
 
 	fclose(fp);
 	free(row);
+	free(palette);
 
 	return 0;
 }
@@ -479,25 +500,35 @@ static int writeSVG( QRcode *qrcode, const char *outfile )
 	for(y=0; y<qrcode->width; y++) {
 		row = (p+(y*qrcode->width));
 
-		/* simple RLE */
-		pen = 0;
-		x0  = 0;
-		for(x=0; x<qrcode->width; x++) {
-			if( !pen ) {
-				pen = *(row+x)&0x1;
-				x0 = x;
-			} else {
-				if(!(*(row+x)&0x1)) {
-					writeSVG_writeRect(fp, x0 + margin, y + margin, x-x0, fg, fg_opacity);
-					pen = 0;
+		if( !rle ) {
+			/* no RLE */
+			for(x=0; x<qrcode->width; x++) {
+				if(*(row+x)&0x1) {
+					writeSVG_writeRect(fp,	margin + x,
+								margin + y, 1,
+								fg, fg_opacity);
 				}
 			}
-		}
-		if( pen ) {
-			writeSVG_writeRect(fp, x0 + margin, y + margin, qrcode->width - x0, fg, fg_opacity);
+		} else {
+			/* simple RLE */
+			pen = 0;
+			x0  = 0;
+			for(x=0; x<qrcode->width; x++) {
+				if( !pen ) {
+					pen = *(row+x)&0x1;
+					x0 = x;
+				} else {
+					if(!(*(row+x)&0x1)) {
+						writeSVG_writeRect(fp, x0 + margin, y + margin, x-x0, fg, fg_opacity);
+						pen = 0;
+					}
+				}
+			}
+			if( pen ) {
+				writeSVG_writeRect(fp, x0 + margin, y + margin, qrcode->width - x0, fg, fg_opacity);
+			}
 		}
 	}
-
 	/* Close QR data viewbox */
 	fputs( "\t\t</g>\n", fp );
 
@@ -630,7 +661,6 @@ static int writeUTF8(QRcode *qrcode, const char *outfile, int use_ansi)
 	FILE *fp;
 	int x, y;
 	int realwidth;
-	unsigned char *p;
 	const char *white, *reset;
 
 	if (use_ansi){
@@ -649,11 +679,10 @@ static int writeUTF8(QRcode *qrcode, const char *outfile, int use_ansi)
 	writeUTF8_margin(fp, realwidth, white, reset, use_ansi);
 
 	/* data */
-	p = qrcode->data;
 	for(y = 0; y < qrcode->width; y += 2) {
 		unsigned char *row1, *row2;
-		row1 = p + y*qrcode->width;
-		row2 = p + y*qrcode->width + qrcode->width;
+		row1 = qrcode->data + y*qrcode->width;
+		row2 = row1 + qrcode->width;
 
 		fputs(white, fp);
 
@@ -661,14 +690,19 @@ static int writeUTF8(QRcode *qrcode, const char *outfile, int use_ansi)
 			fputs("\342\226\210", fp);
 
 		for (x = 0; x < qrcode->width; x++) {
-			if ((*(row1 + x) & 1) && (*(row2 + x) & 1))
-				fputc(' ', fp);
-			else if (*(row1 + x) & 1)
-				fputs("\342\226\204", fp);
-			else if (*(row2 + x) & 1)
-				fputs("\342\226\200", fp);
-			else
-				fputs("\342\226\210", fp);
+			if(row1[x] & 1) {
+				if(y < qrcode->width - 1 && row2[x] & 1) {
+					fputc(' ', fp);
+				} else {
+					fputs("\342\226\204", fp);
+				}
+			} else {
+				if(y < qrcode->width - 1 && row2[x] & 1) {
+					fputs("\342\226\200", fp);
+				} else {
+					fputs("\342\226\210", fp);
+				}
+			}
 		}
 
 		for (x = 0; x < margin; x++)
@@ -721,7 +755,7 @@ static int writeASCII(QRcode *qrcode, const char *outfile, int invert)
 	fp = openFile(outfile);
 
 	realwidth = (qrcode->width + margin * 2) * 2;
-	buffer_s = realwidth + 1;
+	buffer_s = realwidth + 2;
 	buffer = (char *)malloc( buffer_s );
 	if(buffer == NULL) {
 		fprintf(stderr, "Failed to allocate memory.\n");
@@ -795,6 +829,11 @@ static void qrencode(const unsigned char *intext, int length, const char *outfil
 		perror("Failed to encode the input data");
 		exit(EXIT_FAILURE);
 	}
+
+	if(verbose) {
+		fprintf(stderr, "File: %s, Version: %d\n", (outfile!=NULL)?outfile:"(stdout)", qrcode->version);
+	}
+
 	switch(image_type) {
 		case PNG_TYPE:
 			writePNG(qrcode, outfile);
@@ -825,6 +864,7 @@ static void qrencode(const unsigned char *intext, int length, const char *outfil
 			fprintf(stderr, "Unknown image type.\n");
 			exit(EXIT_FAILURE);
 	}
+
 	QRcode_free(qrcode);
 }
 
@@ -906,6 +946,11 @@ static void qrencodeStructured(const unsigned char *intext, int length, const ch
 		} else {
 			snprintf(filename, FILENAME_MAX, "%s-%02d", base, i);
 		}
+
+		if(verbose) {
+			fprintf(stderr, "File: %s, Version: %d\n", filename, p->code->version);
+		}
+
 		switch(image_type) {
 			case PNG_TYPE: 
 				writePNG(p->code, filename);
@@ -1046,6 +1091,7 @@ int main(int argc, char **argv)
 				break;
 			case 'S':
 				structured = 1;
+				break;
 			case 'k':
 				hint = QR_MODE_KANJI;
 				break;
@@ -1077,6 +1123,8 @@ int main(int argc, char **argv)
 				usage(0, 0);
 				exit(EXIT_SUCCESS);
 				break;
+			case 0:
+				break;
 			default:
 				fprintf(stderr, "Try `qrencode --help' for more information.\n");
 				exit(EXIT_FAILURE);
@@ -1099,9 +1147,6 @@ int main(int argc, char **argv)
 		length = strlen((char *)intext);
 	}
 	if(intext == NULL) {
-		if(eightbit) { 
-			setmode( fileno( stdin ), _O_BINARY );
-		}
 		intext = readStdin(&length);
 	}
 
