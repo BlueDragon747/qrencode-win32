@@ -8,8 +8,10 @@
 #define __STATIC static
 
 #if defined(_WIN32) || defined(_WIN64)
-  #define snprintf _snprintf
-  #define vsnprintf _vsnprintf
   #define strcasecmp _stricmp
   #define strncasecmp _strnicmp
+  #if _MSC_VER < 1900   
+    #define snprintf _snprintf
+    #define vsnprintf _vsnprintf
+  #endif
 #endif
