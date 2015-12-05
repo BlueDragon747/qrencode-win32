@@ -1,10 +1,7 @@
-# qrencode-win32
 Automatically exported from code.google.com/p/qrencode-win32
-
 libqrencode 3.4.4 - QR Code encoding library
 
 GENERAL INFORMATION
-===================
 Libqrencode is a library for encoding data in a QR Code symbol, a 2D symbology
 that can be scanned by handy terminals such as a mobile phone with CCD. The
 capacity of QR Code is up to 7000 digits or 4000 characters and has high
@@ -16,35 +13,12 @@ file, using libqrencode allows applications to render QR Code symbols from raw
 bitmap data directly. This library also contains a command-line utility outputs
 a QR Code symbol as a PNG image.
 
-SPECIFICATION
-=============
-Libqrencode supports QR Code model 2, described in JIS (Japanese Industrial
-Standards) X0510:2004 or ISO/IEC 18004. Most of features in the specification
-are implemented such as:
-- Numeric, alphabet, Japanese kanji (Shift-JIS) or any 8 bit code can be
-  embedded
-- Optimized encoding of a string
-- Structured-append of symbols
-- Micro QR Code (experimental)
-
-Currently the following features are not supported:
-- ECI and FNC1 mode
-- QR Code model 1 (deprecated)
-
 WARNINGS
-========
 The library is distributed WITHOUT ANY WRRANTY.
 
 Micro QR Code support is EXPERIMENTAL.
 
-Be careful to use the command line tool (qrencode) if it is used by a web
-application (e.g. CGI script). For example, giving "-s" option with a large
-number to qrencode may cause DoS. The parameters should be checked by the
-application.
-
-
 LICENSING INFORMATION
-=====================
 Copyright (C) 2006-2012 Kentaro Fukuchi
 
 This library is free software; you can redistribute it and/or modify it under
@@ -61,7 +35,6 @@ Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 
 ACKNOWLEDGMENTS
-===============
 QR Code is registered trademarks of DENSO WAVE INCORPORATED in JAPAN and other
 countries.
 
