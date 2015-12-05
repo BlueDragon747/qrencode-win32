@@ -6,6 +6,7 @@
 #include "getopt.h"
 
 #define strcasecmp strcmpi
+#if _MSC_VER < 1900 
 #define snprintf sprintf_s
-
+#endif
 #include "..\..\qrenc.c"
