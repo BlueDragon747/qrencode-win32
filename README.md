@@ -1,4 +1,5 @@
 GENERAL INFORMATION
+===================
 Libqrencode is a library for encoding data in a QR Code symbol, a 2D symbology
 that can be scanned by handy terminals such as a mobile phone with CCD. The
 capacity of QR Code is up to 7000 digits or 4000 characters and has high
@@ -11,6 +12,7 @@ bitmap data directly. This library also contains a command-line utility outputs
 a QR Code symbol as a PNG image.
 
 LICENSING INFORMATION
+=====================
 Copyright (C) 2006-2012 Kentaro Fukuchi
 
 This library is free software; you can redistribute it and/or modify it under
@@ -27,6 +29,7 @@ Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 
 ACKNOWLEDGMENTS
+===============
 QR Code is registered trademarks of DENSO WAVE INCORPORATED in JAPAN and other
 countries.
 
