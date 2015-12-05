@@ -56,3 +56,4 @@ Shigeyuki Hirai, Paul Janssens, wangsai, Gavan Fantom, Matthew Baker, Rob Ryan,
 Fred Steinhaeuser, Terry Burton, chisj, vlad417, Petr, Hassan Hajji,
 Emmanuel Blot, ßlúèÇhîp, win32asm, Antenore, Yoshimichi Inoue
  - bug report / suggestion
+ - 
