@@ -36,7 +36,7 @@ countries.
 Reed-Solomon encoder is written by Phil Karn, KA9Q.
 Copyright (C) 2002, 2003, 2004, 2006 Phil Karn, KA9Q
 
-BlueDragon747         - made changes for VS 2015 compatability 
+BlueDragon747         - made changes for VS 2015 compatability
 NANKI Haruo           - improved lower-case characteres encoding
 Philippe Delcroix     - improved mask evaluation
 Yusuke Mihara         - structured-append support
@@ -48,12 +48,12 @@ Ralf Ertzinger        - ASCII support patch
 Yutaka Niibe (gniibe) - various bug fix patches
 Dan Storm (Repox)     - SVG support patch
 Lennart Poettering (mezcalero)
-                      - improved text art patch
+- improved text art patch
 Yann Droneaud         - improved input validation patch
 Viona                 - bug fix patch for string splitting
 Daniel Dörrhöfer      - RLE option
 Shigeyuki Hirai, Paul Janssens, wangsai, Gavan Fantom, Matthew Baker, Rob Ryan,
 Fred Steinhaeuser, Terry Burton, chisj, vlad417, Petr, Hassan Hajji,
 Emmanuel Blot, ßlúèÇhîp, win32asm, Antenore, Yoshimichi Inoue
- - bug report / suggestion
+- bug report / suggestion
  - 
