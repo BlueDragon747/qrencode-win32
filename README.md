@@ -16,7 +16,6 @@ file, using libqrencode allows applications to render QR Code symbols from raw
 bitmap data directly. This library also contains a command-line utility outputs
 a QR Code symbol as a PNG image.
 
-
 SPECIFICATION
 =============
 Libqrencode supports QR Code model 2, described in JIS (Japanese Industrial
@@ -31,42 +30,6 @@ are implemented such as:
 Currently the following features are not supported:
 - ECI and FNC1 mode
 - QR Code model 1 (deprecated)
-
-
-INSTALL
-=======
-
-Requirements
-------------
-Some test programs or utility tools uses SDL or PNG, but the library itself
-has no dependencies. You can skip compiling those tools if you want not to
-install programs using SDL or PNG.
-
-Compile & install
------------------
-Just try
-
-./configure
-make
-make install
-
-This compiles and installs the library and header file to the appropriate
-directories. By default, /usr/local/lib and /usr/local/include. You can change
-the destination directory by passing some options to the configure script.
-Run "./configure --help" to see the list of options.
-
-It also installs a binary "qrencode" to /usr/local/bin. If you want not to
-install it, give "--without-tools" option to the configure script.
-
-When you downloaded a development tree from github, it is required to run
-"autogen.sh" at first to generate configure script.
-
-
-USAGE
-=====
-Basic usages of this library are written in the header file (qrencode.h).
-You can generate a manual of the library by using Doxygen.
-
 
 WARNINGS
 ========
@@ -95,27 +58,6 @@ PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License along
 with this library; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
-
-
-CONTACT
-=======
-Visit the homepage at:
-
-http://fukuchi.org/works/qrencode/
-
-for new releases. The git repository is available at:
-
-https://github.com/fukuchi/libqrencode
-
-Please mail any bug reports, suggestions, comments, and questions to:
-
-Kentaro Fukuchi <kentaro@fukuchi.org>
-
-or submit issues to:
-
-https://github.com/fukuchi/libqrencode/issues
-
-Questions of license compliance are also welcome.
 
 
 ACKNOWLEDGMENTS
