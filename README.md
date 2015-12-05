@@ -1,6 +1,3 @@
-Automatically exported from code.google.com/p/qrencode-win32
-libqrencode 3.4.4 - QR Code encoding library
-
 GENERAL INFORMATION
 Libqrencode is a library for encoding data in a QR Code symbol, a 2D symbology
 that can be scanned by handy terminals such as a mobile phone with CCD. The
@@ -12,11 +9,6 @@ symbol as a bitmap array. While other QR Code applications generate an image
 file, using libqrencode allows applications to render QR Code symbols from raw
 bitmap data directly. This library also contains a command-line utility outputs
 a QR Code symbol as a PNG image.
-
-WARNINGS
-The library is distributed WITHOUT ANY WRRANTY.
-
-Micro QR Code support is EXPERIMENTAL.
 
 LICENSING INFORMATION
 Copyright (C) 2006-2012 Kentaro Fukuchi
